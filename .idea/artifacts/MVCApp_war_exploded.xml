@@ -12,6 +12,10 @@
           <element id="library" level="project" name="Maven: commons-lang:commons-lang:2.1" />
           <element id="library" level="project" name="Maven: oro:oro:2.0.8" />
           <element id="library" level="project" name="Maven: velocity:velocity:1.5" />
+          <element id="library" level="project" name="Maven: org.codehaus.jackson:jackson-jaxrs:1.9.13" />
+          <element id="library" level="project" name="Maven: org.codehaus.jackson:jackson-core-asl:1.9.13" />
+          <element id="library" level="project" name="Maven: org.codehaus.jackson:jackson-mapper-asl:1.9.13" />
+          <element id="library" level="project" name="Maven: com.oracle:ojdbc6:11.2.0.3" />
         </element>
       </element>
       <element id="directory" name="META-INF">
