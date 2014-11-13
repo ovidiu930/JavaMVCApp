@@ -52,6 +52,7 @@ public class MyDispatcherServlet extends HttpServlet {
                             String key=((MyController) clase.getAnnotation(MyController.class)).urlPath()+((MyRequestMethod) m1.getAnnotation(MyRequestMethod.class)).urlPath();
                            // String value=clase.getName()+m1.getName()+((MyRequestMethod) m1.getAnnotation(MyRequestMethod.class)).methodType();
                             MethodAttributes e = new MethodAttributes();
+                            e.setMethodParameterTypes(m1.getParameterTypes());
                             e.setControllerClass(clase.getName());
                             e.setMethodName(m1.getName());
                             e.setMethodType(((MyRequestMethod) m1.getAnnotation(MyRequestMethod.class)).methodType());
@@ -120,19 +121,21 @@ public class MyDispatcherServlet extends HttpServlet {
                 Class controllerClass = Class.forName(val.getControllerClass());
                 Object controllerInstance = controllerClass.newInstance();
 
-               String a= req.getParameter("id");
+                String a = req.getParameter("id");
                 System.out.println(a);
-               if(a!=null) {
+               /* if (a != null) {
 
-                   Method method = controllerClass.getMethod(val.getMethodName(), String.class);
-                    Object responseProcesare = method.invoke(controllerInstance,a);
+                    Method method = controllerClass.getMethod(val.getMethodName(), String.class);
+                    Object responseProcesare = method.invoke(controllerInstance, a);
                     return responseProcesare;
-               }
-                else{
-                   Method method = controllerClass.getMethod(val.getMethodName());
-                   Object responseProcesare = method.invoke(controllerInstance);
-                   return responseProcesare;
-               }
+                }
+                //else{*/
+                Method method = controllerClass.getMethod(val.getMethodName(), val.getMethodParameterTypes());
+
+                Object responseProcesare = method.invoke(controllerInstance);
+                return responseProcesare;
+
+
 
 
             } catch (Exception e) {
