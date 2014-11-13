@@ -54,31 +54,31 @@ public class ResultSetToPojoConverter {
 
     public static ArrayList<EmployeeView> convertToEmployeeView(ResultSet rs, Connection con) throws SQLException {
 
-        ArrayList<EmployeeView> employeeViews = new ArrayList<EmployeeView>();
+           ArrayList<EmployeeView> employeeViews = new ArrayList<EmployeeView>();
 
-        while (rs.next()) {
-            EmployeeView employeeView = new EmployeeView();
-            ArrayList<Job> jobs = jobDao.getAllJobs(con);
-            ArrayList<Department> departments = departmentDao.getAllDepartments(con);
-            ArrayList<Employee> managers =  employeeDao.getAllEmployees(con); //de modificat sa se excluda pe sine
+           while (rs.next()) {
+               EmployeeView employeeView = new EmployeeView();
+               ArrayList<Job> jobs = jobDao.getAllJobs(con);
+               ArrayList<Department> departments = departmentDao.getAllDepartments(con);
+               ArrayList<Employee> managers =  employeeDao.getAllEmployees(con); //de modificat sa se excluda pe sine
 
 
-            employeeView.setId(rs.getLong("employee_id"));
-            employeeView.setFirstName(rs.getString("first_name"));
-            employeeView.setLastName(rs.getString("last_name"));
-            employeeView.setEmail(rs.getString("email"));
-            employeeView.setPhoneNumber(rs.getString("phone_number"));
-            employeeView.setHireDate(rs.getDate("hire_date"));
-            employeeView.setJob(jobs);
-            employeeView.setSalary(rs.getDouble("salary"));
-            employeeView.setCommissionPoints(rs.getDouble("commission_pct"));
-            employeeView.setManager(managers);
-            employeeView.setDepartment(departments);
+               employeeView.setId(rs.getLong("employee_id"));
+               employeeView.setFirstName(rs.getString("first_name"));
+               employeeView.setLastName(rs.getString("last_name"));
+               employeeView.setEmail(rs.getString("email"));
+               employeeView.setPhoneNumber(rs.getString("phone_number"));
+               employeeView.setHireDate(rs.getDate("hire_date"));
+               employeeView.setJob(jobs);
+               employeeView.setSalary(rs.getDouble("salary"));
+               employeeView.setCommissionPoints(rs.getDouble("commission_pct"));
+               employeeView.setManager(managers);
+               employeeView.setDepartment(departments);
 
-            employeeViews.add(employeeView);
-        }
-        return employeeViews;
-    }
+               employeeViews.add(employeeView);
+           }
+           return employeeViews;
+       }
 
     public static ArrayList<Job> convertToJob(ResultSet rs, Connection con) throws SQLException {
         ArrayList<Job> jobs = new ArrayList<Job>();
@@ -95,14 +95,14 @@ public class ResultSetToPojoConverter {
     }
 
     public static ArrayList<Department> convertToDepartment(ResultSet rs, Connection con) throws SQLException {
-        ArrayList<Department> departments = new ArrayList<Department>();
-        while (rs.next()) {
-            Department department = new Department();
-            department.setId(rs.getLong("department_id"));
-            department.setDepartmentName(rs.getString("department_name"));
-            departments.add(department);
+            ArrayList<Department> departments = new ArrayList<Department>();
+            while (rs.next()) {
+                Department department = new Department();
+                department.setId(rs.getLong("department_id"));
+                department.setDepartmentName(rs.getString("department_name"));
+                departments.add(department);
+            }
+            return departments;
         }
-        return departments;
-    }
 
 }

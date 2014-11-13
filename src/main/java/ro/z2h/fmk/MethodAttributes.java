@@ -8,14 +8,14 @@ public class MethodAttributes {
     String controllerClass;
     String methodName;
     String methodType;
-    Class<?>[] methodParameterTypes;
+    Class<?>[] methodParametersType;
 
-    public Class<?>[] getMethodParameterTypes() {
-        return methodParameterTypes;
+    public Class<?>[] getMethodParametersType() {
+        return methodParametersType;
     }
 
-    public void setMethodParameterTypes(Class<?>[] methodParameterTypes) {
-        this.methodParameterTypes = methodParameterTypes;
+    public void setMethodParametersType(Class<?>[] methodParametersType) {
+        this.methodParametersType = methodParametersType;
     }
 
     public String getControllerClass() {
@@ -72,14 +72,5 @@ public class MethodAttributes {
         result = 31 * result + (methodName != null ? methodName.hashCode() : 0);
         result = 31 * result + (methodType != null ? methodType.hashCode() : 0);
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return "MethodAttributes{" +
-                "controllerClass='" + controllerClass + '\'' +
-                ", methodName='" + methodName + '\'' +
-                ", methodType='" + methodType + '\'' +
-                '}';
     }
 }

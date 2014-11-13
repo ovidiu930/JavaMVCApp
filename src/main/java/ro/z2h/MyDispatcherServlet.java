@@ -3,8 +3,6 @@ package ro.z2h;
 import org.codehaus.jackson.map.ObjectMapper;
 import ro.z2h.annotation.MyController;
 import ro.z2h.annotation.MyRequestMethod;
-import ro.z2h.controller.DepartmentsController;
-import ro.z2h.controller.EmployeeController;
 import ro.z2h.fmk.AnnotationScanUtils;
 import ro.z2h.fmk.MethodAttributes;
 
@@ -14,167 +12,118 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * Created by ovy on 11/11/2014.
- */
 public class MyDispatcherServlet extends HttpServlet {
-    HashMap<String,MethodAttributes> has = new HashMap<String,MethodAttributes>();
+
+    HashMap<String, MethodAttributes> myMap = new HashMap<String, MethodAttributes>();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-       dispatchReplay("GET",req, resp);
+        dispatchReply("GET", req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        dispatchReply("POST", req, resp);
+    }
+
+    private void dispatchReply(String httpMethod, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+//        req.getMethod();
+        /* Dispatch */
+        Object r = dispatch(httpMethod, req, resp);
+
+        /*Reply*/
+        reply(r, req, resp);
+
+        /* Tratarea erorilor */
+        Exception ex = null;
+        sendException(ex, req, resp);
+    }
+
+    /*Where an application controller should be  called.*/
+    private Object dispatch(String httpMethod, HttpServletRequest req, HttpServletResponse resp) {
+        /*pentru / test = Hello */
+        /*pentru / employee => allEmployees de la Application Controller*/
+        String pathInfo = req.getPathInfo();
+        MethodAttributes methodAttributes = myMap.get(pathInfo);
+        try {
+            if (methodAttributes != null) {
+
+                Class<?> appControllerClass = Class.forName(methodAttributes.getControllerClass());
+                Object appControllerInstance = appControllerClass.newInstance();
+                Method controllerMethod = appControllerClass.getMethod(methodAttributes.getMethodName(), methodAttributes.getMethodParametersType());
+
+                Parameter[] parameters = controllerMethod.getParameters();
+                ArrayList<String> parametrii = new ArrayList<>();
+                for (Parameter realMethodParameter : parameters) {
+                    String parameter = req.getParameter(realMethodParameter.getName());
+                    parametrii.add(parameter);
+                }
+
+                return controllerMethod.invoke(appControllerInstance,  (String[]) parametrii.toArray(new String[0]));
+            }
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return "Hello";
+    }
+
+    /*Used to send the view to the client*/
+    private void reply(Object r, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String valueAsString = objectMapper.writeValueAsString(r);
+        PrintWriter writer = resp.getWriter();
+        writer.printf(valueAsString);
+    }
+
+    private void sendException(Exception ex, HttpServletRequest req, HttpServletResponse resp) {
+        System.out.println("There was an exception!");
     }
 
     @Override
     public void init() throws ServletException {
-
-        //super.init();
         try {
-            Iterable<Class> clases = AnnotationScanUtils.getClasses("ro.z2h.controller");
-            for (Class clase : clases) {
+            Iterable<Class> classes = AnnotationScanUtils.getClasses("ro.z2h.controller");
 
-                if (clase.isAnnotationPresent(MyController.class)) {
-
-                    System.out.println(((MyController) clase.getAnnotation(MyController.class)).urlPath());
-                    // System.out.println(((MyRequestMethod)clase.getAnnotation(MyRequestMethod.class)).methodType());
-
-
-                    Method[] m = clase.getDeclaredMethods();
-                    //iter+tab
-                    for (Method m1 : m) {
-                        if (m1.isAnnotationPresent(MyRequestMethod.class)) {
-                            System.out.println(((MyRequestMethod) m1.getAnnotation(MyRequestMethod.class)).methodType());
-                            System.out.println(((MyController) clase.getAnnotation(MyController.class)).urlPath()+((MyRequestMethod) m1.getAnnotation(MyRequestMethod.class)).urlPath());
-                            String key=((MyController) clase.getAnnotation(MyController.class)).urlPath()+((MyRequestMethod) m1.getAnnotation(MyRequestMethod.class)).urlPath();
-                           // String value=clase.getName()+m1.getName()+((MyRequestMethod) m1.getAnnotation(MyRequestMethod.class)).methodType();
-                            MethodAttributes e = new MethodAttributes();
-                            e.setMethodParameterTypes(m1.getParameterTypes());
-                            e.setControllerClass(clase.getName());
-                            e.setMethodName(m1.getName());
-                            e.setMethodType(((MyRequestMethod) m1.getAnnotation(MyRequestMethod.class)).methodType());
-                            has.put(key,e);
+            for (Class aClass : classes) {
+                if (aClass.isAnnotationPresent(MyController.class)) {
+                    String urlClass = ((MyController) aClass.getAnnotation(MyController.class)).urlPath();
+                    System.out.println(urlClass);
+                    for (Method method : aClass.getMethods()) {
+                        if (method.isAnnotationPresent(MyRequestMethod.class)) {
+                            String urlMethod = ((MyRequestMethod) method.getAnnotation(MyRequestMethod.class)).urlPath();
+                            System.out.println(urlClass);
+                            System.out.println(urlMethod);
+                            String urlKey = urlClass + urlMethod;
+                            MethodAttributes ma = new MethodAttributes();
+                            ma.setControllerClass(aClass.getName());
+                            ma.setMethodType(((MyRequestMethod) method.getAnnotation(MyRequestMethod.class)).methodType());
+                            ma.setMethodName(method.getName());
+                            ma.setMethodParametersType(method.getParameterTypes());
+                            myMap.put(urlKey, ma);
                         }
                     }
                 }
             }
+
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-        }catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(has);
-
-            }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        dispatchReplay("POST", req, resp);
     }
-
-    private void dispatchReplay(String HttpMethod,HttpServletRequest req, HttpServletResponse resp) {
-
-        /*Dispatch*/
-       Object r = dispatch(HttpMethod,req,resp);
-        /*Replay*/
-        try {
-            replay(r, req, resp);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        /*Catch errors*/
-        sendErrors();
-        Exception ex=null;
-        sendException(ex, req, resp);
-    }
-
-    private void sendException(Exception ex, HttpServletRequest req, HttpServletResponse resp) {
-        System.out.println("There was an exception");
-    }
-
-    private void sendErrors() {
-    }
-
-    /*Used to replay the answer to the client*/
-    private void replay(Object r, HttpServletRequest req, HttpServletResponse resp) throws Exception{
-        PrintWriter writer=resp.getWriter();
-        ObjectMapper mapper = new ObjectMapper();
-       String s= mapper.writeValueAsString(r);
-        writer.printf(s);
-    }
-
-    /*Where an application conttroler should be return*/
-   ;
-    private Object dispatch(String httpMethod, HttpServletRequest req, HttpServletResponse resp) {
-        //MyRequestMethod runner = new MyRequestMethod();
-        //Method[] methods = runner.getClass().getMethods();
-        /*test return Hello*/
-        /*for test/employee i want all employees for applicationControler*/
-      //  Class newClass =  new Class();
-
-       MethodAttributes val= has.get(req.getPathInfo());
-        if(val!= null) {
-            try {
-                Class controllerClass = Class.forName(val.getControllerClass());
-                Object controllerInstance = controllerClass.newInstance();
-
-                String a = req.getParameter("id");
-                System.out.println(a);
-               /* if (a != null) {
-
-                    Method method = controllerClass.getMethod(val.getMethodName(), String.class);
-                    Object responseProcesare = method.invoke(controllerInstance, a);
-                    return responseProcesare;
-                }
-                //else{*/
-                Method method = controllerClass.getMethod(val.getMethodName(), val.getMethodParameterTypes());
-
-                Object responseProcesare = method.invoke(controllerInstance);
-                return responseProcesare;
-
-
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-       /* r.split("/");
-        if (has.containsKey(r.)) {
-            try{
-                Iterable<Class> clases = AnnotationScanUtils.getClasses("ro.z2h.controller");
-                for (Class clase : clases){
-                    if(((MyController)clase.getAnnotation(MyController.class)).urlPath().equals(r)){
-                        Method[] m=clase.getDeclaredMethods();
-                        for(Method m1:m) {
-
-                          if(((MyRequestMethod) m1.getAnnotation(MyRequestMethod.class)).urlPath().equals());
-
-
-                }
-            }catch(Exception e){
-                e.printStackTrace();
-            }*/
-
-      /* if (r.startsWith("/employee")) {
-            EmployeeController e = new EmployeeController();
-            return e.getAllEmployees();
-        } else if (r.startsWith("/department")) {
-                DepartmentsController e = new DepartmentsController();
-                return e.getAllDepartment();
-            } else {
-
-                return "Hello!";
-            }*/
-            return null;
-
-        }
-
-    }
-
-
-
+}

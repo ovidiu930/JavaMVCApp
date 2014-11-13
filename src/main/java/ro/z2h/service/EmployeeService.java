@@ -2,14 +2,13 @@ package ro.z2h.service;
 
 import ro.z2h.domain.Employee;
 
-import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by ovy on 11/12/2014.
- */
 public interface EmployeeService {
-  List<Employee> findAllEmployees();
-  Employee findOneEmployee(Long id);
 
+    List<Employee> findAllEmployees();
+
+    Employee findOneEmployee(Long id);
+
+    void deleteOneEmployee(Long id);
 }

@@ -2,9 +2,6 @@ package ro.z2h.annotation;
 
 import java.lang.annotation.*;
 
-/**
- * Created by ovy on 11/11/2014.
- */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

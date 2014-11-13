@@ -4,15 +4,17 @@
 
 <web-app>
     <display-name>Awesome MVC Framework</display-name>
+
     <servlet>
         <servlet-name>MyDispatcherServlet</servlet-name>
-        <description>MVC DescriptionServlet</description>
         <servlet-class>ro.z2h.MyDispatcherServlet</servlet-class>
+
     </servlet>
+
     <servlet-mapping>
-    <servlet-name>MyDispatcherServlet</servlet-name>
-    <url-pattern>/mvc/*</url-pattern>
-</servlet-mapping>
+        <servlet-name>MyDispatcherServlet</servlet-name>
+        <url-pattern>/mvc/*</url-pattern>
+    </servlet-mapping>
 
     <!--Configurare servleti-->
 
